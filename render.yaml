@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: meeting5-chat
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://meeting5-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://tu-frontend.vercel.app
+      - key: BACKEND_PRINCIPAL_URL
+        value: https://meeting5-backend.onrender.com
