@@ -37,6 +37,7 @@ export const configureSocket = (httpServer: HTTPServer): Server => {
     // Event listeners
     socket.on('join-room', (payload) => chatController.handleJoinRoom(socket, payload));
     socket.on('send-message', (payload) => chatController.handleSendMessage(socket, payload));
+    socket.on('get-room-count', (payload) => chatController.handleGetRoomCount(socket, payload));
     socket.on('leave-room', () => chatController.handleLeaveRoom(socket));
     socket.on('disconnect', () => chatController.handleDisconnect(socket));
 
