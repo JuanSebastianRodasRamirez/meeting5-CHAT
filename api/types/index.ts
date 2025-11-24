@@ -47,6 +47,7 @@ export interface MeetingParticipantsResponse {
     host: User;
     participants: string[];
     participantDetails: User[];
+    isPublic: boolean;
   };
   message?: string;
 }

@@ -3,5 +3,4 @@ dist/
 .env
 *.log
 .DS_Store
-test-client.html
-test-socket.js
+test*

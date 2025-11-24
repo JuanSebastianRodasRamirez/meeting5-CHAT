@@ -10,6 +10,6 @@ services:
       - key: BACKEND_URL
         value: https://meeting5-backend.onrender.com
       - key: FRONTEND_URL
-        value: https://tu-frontend.vercel.app
+        value: https://meeting5-frontend.vercel.app/
       - key: BACKEND_PRINCIPAL_URL
         value: https://meeting5-backend.onrender.com
