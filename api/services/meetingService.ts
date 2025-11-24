@@ -20,6 +20,7 @@ export const getMeetingParticipants = async (
   host: User;
   participants: string[];
   participantDetails: User[];
+  isPublic: boolean;
 } | null> => {
   try {
     const response = await axios.get<MeetingParticipantsResponse>(

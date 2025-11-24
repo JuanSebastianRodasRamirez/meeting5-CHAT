@@ -35,10 +35,25 @@ export class ChatController {
         return;
       }
 
-      // Get user name from participant details
+      // Get user name from participant details OR host
       const userDetails = meetingData.participantDetails.find(p => p.id === socket.userId) || 
-                          meetingData.host;
-      const userName = userDetails ? `${userDetails.firstName} ${userDetails.lastName}` : 'Unknown User';
+                          (meetingData.host.id === socket.userId ? meetingData.host : null);
+      
+      let userName: string;
+      
+      if (userDetails) {
+        // User is a participant or host
+        userName = `${userDetails.firstName} ${userDetails.lastName}`;
+      } else if (meetingData.isPublic) {
+        // Public meeting - allow authenticated users who aren't participants
+        userName = `Guest ${socket.userId.substring(0, 8)}`;
+        logger.info(`Guest user ${socket.userId} joining public meeting ${meetingId}`);
+      } else {
+        // Private meeting and user not in participant list
+        logger.warn(`Join room denied - User ${socket.userId} not found in private meeting ${meetingId}`);
+        socket.emit('error', { message: 'User not found in this meeting' });
+        return;
+      }
 
       // Join the room
       socket.join(meetingId);
@@ -54,15 +69,14 @@ export class ChatController {
         timestamp: new Date().toISOString()
       });
 
-      // Confirm to the user
-      socket.emit('room-joined', {
-        meetingId,
-        meetingTitle: meetingData.title,
-        participants: meetingData.participantDetails,
-        message: `Successfully joined ${meetingData.title}`
-      });
-
-    } catch (error) {
+    // Confirm to the user
+    socket.emit('room-joined', {
+      meetingId,
+      meetingTitle: meetingData.title,
+      participants: meetingData.participantDetails,
+      isPublic: meetingData.isPublic,
+      message: `Successfully joined ${meetingData.title}`
+    });    } catch (error) {
       logger.error('Error joining room', error instanceof Error ? error : null);
       socket.emit('error', { message: 'Failed to join room' });
     }
