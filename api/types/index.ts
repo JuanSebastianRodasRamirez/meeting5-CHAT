@@ -28,6 +28,7 @@ export interface JoinRoomPayload {
 }
 
 export interface SendMessagePayload {
+  userName: string;
   content: string;
 }
 

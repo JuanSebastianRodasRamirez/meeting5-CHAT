@@ -37,8 +37,9 @@ export class ChatController {
 
       // Get user name from participant details OR host
       const userDetails = meetingData.participantDetails.find(p => p.id === socket.userId) || 
-                          (meetingData.host.id === socket.userId ? meetingData.host : null);
-      
+                            (meetingData.host.id === socket.userId ? meetingData.host : null);
+                            
+
       let userName: string;
       
       if (userDetails) {
@@ -87,7 +88,7 @@ export class ChatController {
    */
   public handleSendMessage = (socket: AuthenticatedSocket, payload: SendMessagePayload): void => {
     try {
-      const { content } = payload;
+      const { userName, content } = payload;
 
       if (!socket.userId || !socket.meetingId || !socket.userName) {
         socket.emit('error', { message: 'Not in a meeting room' });
@@ -103,7 +104,7 @@ export class ChatController {
         id: uuidv4(),
         meetingId: socket.meetingId,
         userId: socket.userId,
-        userName: socket.userName,
+        userName: userName,
         content: content.trim(),
         timestamp: new Date()
       };
@@ -116,6 +117,47 @@ export class ChatController {
     } catch (error) {
       logger.error('Error sending message', error instanceof Error ? error : null);
       socket.emit('error', { message: 'Failed to send message' });
+    }
+  };
+
+  /**
+   * Handles requests for number of users connected to a room
+   * Emits `room-count` back to the requesting socket with both socket-level count
+   * (number of socket connections) and unique user count (distinct `userId`s).
+   */
+  public handleGetRoomCount = async (socket: AuthenticatedSocket, payload: { meetingId?: string } = {}): Promise<void> => {
+    console.log("handleGetRoomCount called with payload:", payload);
+    try {
+      const meetingId = payload.meetingId || socket.meetingId;
+
+      if (!meetingId) {
+        socket.emit('error', { message: 'meetingId is required' });
+        return;
+      }
+
+      // allSockets returns a Set of socket ids currently in the room
+      const socketsInRoom = await this.io.in(meetingId).allSockets();
+      const socketsCount = socketsInRoom.size;
+
+      // Derive unique users by reading userId from each socket (if available)
+      const userIds = new Set<string>();
+      const socketIds: string[] = [];
+      for (const socketId of socketsInRoom) {
+        socketIds.push(socketId);
+        const s = this.io.sockets.sockets.get(socketId) as AuthenticatedSocket | undefined;
+        if (s && s.userId) userIds.add(s.userId);
+      }
+      const uniqueUserCount = userIds.size;
+
+      const socketIdsArr = socketIds;
+      const userIdsArr = Array.from(userIds);
+
+      logger.info(`Room count for ${meetingId}: sockets=${socketsCount}, uniqueUsers=${uniqueUserCount}, socketIds=${socketIdsArr.join(',')}`);
+
+      socket.emit('room-count', { meetingId, socketsCount, uniqueUserCount, socketIds: socketIdsArr, userIds: userIdsArr });
+    } catch (error) {
+      logger.error('Error getting room count', error instanceof Error ? error : null);
+      socket.emit('error', { message: 'Failed to get room count' });
     }
   };
 
@@ -155,4 +197,5 @@ export class ChatController {
       logger.error('Error handling disconnect', error instanceof Error ? error : null);
     }
   };
+
 }
