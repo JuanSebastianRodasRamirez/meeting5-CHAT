@@ -7,9 +7,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3001
       - key: BACKEND_URL
-        value: https://meeting5-backend.onrender.com
-      - key: FRONTEND_URL
-        value: https://meeting5-frontend.vercel.app/
+        sync: false
       - key: BACKEND_PRINCIPAL_URL
-        value: https://meeting5-backend.onrender.com
+        sync: false  
+      - key: FRONTEND_URL
+        sync: false  
