@@ -7,9 +7,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3001
+      - key: BACKEND_URL
+        sync: false
       - key: BACKEND_PRINCIPAL_URL
         sync: false  
       - key: FRONTEND_URL
-        sync: false  
-      - key: JWT_SECRET
         sync: false  
