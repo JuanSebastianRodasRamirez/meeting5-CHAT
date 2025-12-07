@@ -161,6 +161,23 @@ export class ChatController {
     }
   };
 
+  public handleGetAVStatus = async (socket: AuthenticatedSocket, payload: { meetingId?: string, peerId?: string, audioEnabled?: boolean, videoEnabled?: boolean } = {}): Promise<void> => {
+    try {
+
+      console.log("handleGetAVStatus called with payload:", payload);
+      if (!socket.userId || !socket.meetingId || !socket.userName) {
+        socket.emit('error', { message: 'Not in a meeting room' });
+        return;
+      }
+      // Broadcast to everyone in the room (including sender)
+      this.io.to(socket.meetingId).emit('new-av-status', payload);
+      
+    } catch (error) {
+      logger.error('Error handling AV status', error instanceof Error ? error : null);
+      socket.emit('error', { message: 'Failed to get AV status' });
+    }
+  }
+
   /**
    * Handles user leaving a room
    */
